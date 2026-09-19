@@ -41,12 +41,54 @@ Input x (784-D) ──┬──► Model B (Seed 1: 784 -> 256 -> 10)
                        Independent feature learning baseline
 ```
 
-### Mathematical Definitions
-For input sample $x$ and ground truth label $y$:
-- **Model B Output**: $\hat{y}_B = \operatorname{argmax}_k p_k, \quad \text{Error} = \mathbb{I}(\hat{y}_B \ne y)$
-- **Detector (a) Score**: $s_a = 1 - \max_k p_k$
-- **Detector (b) Feature**: $\mathbf{z}_b = [\mu(h), \sigma(h), \rho_{>0}(h), \mu(|h|)] \in \mathbb{R}^4, \quad s_b = \sigma(\mathbf{w}_b^\top \mathbf{z}_b + b_b)$
-- **Detector (c) Score**: $s_c = \sigma(\mathbf{W}_2 \operatorname{ReLU}(\mathbf{W}_1 \mathbf{h}_B + \mathbf{b}_1) + b_2) \in [0, 1]$
+### Mathematical Formulation
+
+Let input sample $\mathbf{x} \in \mathbb{R}^D$ ($D=784$) with ground-truth categorical label $y \in \{0, 1, \dots, K-1\}$ ($K=10$).
+
+#### Model B Forward Mapping
+Model B is parameterized by $\theta_B = \{\mathbf{W}_B^{(1)} \in \mathbb{R}^{H \times D}, \mathbf{b}_B^{(1)} \in \mathbb{R}^H, \mathbf{W}_B^{(2)} \in \mathbb{R}^{K \times H}, \mathbf{b}_B^{(2)} \in \mathbb{R}^K\}$ with $H=256$:
+1. **Hidden Representation**:
+   $$\mathbf{h}_B(\mathbf{x}) = \operatorname{ReLU}\left(\mathbf{W}_B^{(1)} \mathbf{x} + \mathbf{b}_B^{(1)}\right) \in \mathbb{R}_{\ge 0}^H$$
+2. **Logit Vector & Softmax Distribution**:
+   $$\mathbf{z}_B(\mathbf{x}) = \mathbf{W}_B^{(2)} \mathbf{h}_B(\mathbf{x}) + \mathbf{b}_B^{(2)} \in \mathbb{R}^K$$
+   $$\mathbf{p}_B(\mathbf{x}) = \operatorname{softmax}\left(\mathbf{z}_B(\mathbf{x})\right) \in \Delta^{K-1}, \quad p_{B,k}(\mathbf{x}) = \frac{\exp(z_{B,k})}{\sum_{j=0}^{K-1} \exp(z_{B,j})}$$
+3. **Prediction & Binary Classification Error**:
+   $$\hat{y}_B(\mathbf{x}) = \operatorname{argmax}_{k \in \{0,\dots,K-1\}} p_{B,k}(\mathbf{x}), \quad e_B(\mathbf{x}, y) = \mathbb{I}\left(\hat{y}_B(\mathbf{x}) \ne y\right) \in \{0, 1\}$$
+
+---
+
+#### The Three Error Detectors
+
+##### Detector (a) — Softmax Confidence Error Score
+Unsupervised baseline using Model B's output probability dispersion:
+- Confidence: $\kappa_a(\mathbf{x}) = \max_{k} p_{B,k}(\mathbf{x}) = \|\mathbf{p}_B(\mathbf{x})\|_\infty \in [1/K, 1]$
+- Predicted error score:
+  $$s_a(\mathbf{x}) = 1 - \kappa_a(\mathbf{x}) = 1 - \max_{k \in \{0,\dots,K-1\}} p_{B,k}(\mathbf{x}) \in [0, 1 - 1/K]$$
+
+##### Detector (b) — 4-Stat Internal Introspection Probe
+Extracts 4 summary statistics of internal hidden activations $\mathbf{h}_B = [h_{B,1}, \dots, h_{B,H}]^\top \in \mathbb{R}^H$:
+$$\mathbf{z}_b(\mathbf{x}) = \begin{bmatrix}
+\mu(\mathbf{h}_B) \\
+\sigma(\mathbf{h}_B) \\
+\rho_{>0}(\mathbf{h}_B) \\
+\nu(\mathbf{h}_B)
+\end{bmatrix} \in \mathbb{R}^4, \quad \text{where} \quad \begin{cases}
+\mu(\mathbf{h}_B) = \frac{1}{H}\sum_{d=1}^H h_{B,d} & \text{(mean activation)} \\
+\sigma(\mathbf{h}_B) = \sqrt{\frac{1}{H}\sum_{d=1}^H (h_{B,d} - \mu(\mathbf{h}_B))^2} & \text{(activation spread / std)} \\
+\rho_{>0}(\mathbf{h}_B) = \frac{1}{H}\sum_{d=1}^H \mathbb{I}(h_{B,d} > 0) & \text{(fraction of active neurons)} \\
+\nu(\mathbf{h}_B) = \frac{1}{H}\sum_{d=1}^H |h_{B,d}| & \text{(mean absolute magnitude)}
+\end{cases}$$
+*(Note: Since $\mathbf{h}_B = \operatorname{ReLU}(\cdot) \ge 0$, $\nu(\mathbf{h}_B) \equiv \mu(\mathbf{h}_B)$ post-activation, highlighting a fundamental information bottleneck of coarse statistics).*
+
+Given standardization $(\boldsymbol{\mu}_{\text{cal}}, \boldsymbol{\sigma}_{\text{cal}})$ on held-out calibration data:
+$$\tilde{\mathbf{z}}_b(\mathbf{x}) = \operatorname{diag}(\boldsymbol{\sigma}_{\text{cal}})^{-1} \left(\mathbf{z}_b(\mathbf{x}) - \boldsymbol{\mu}_{\text{cal}}\right)$$
+$$s_b(\mathbf{x}) = \sigma\left(\mathbf{w}_b^\top \tilde{\mathbf{z}}_b(\mathbf{x}) + b_b\right) \in (0, 1)$$
+
+##### Detector (c) — Meta-Interoceptive Observer Head
+An independent MLP head $g_\phi: \mathbb{R}^H \to (0, 1)$ parameterized by $\phi = \{\mathbf{W}_{\text{head}}^{(1)} \in \mathbb{R}^{64 \times 256}, \mathbf{b}_{\text{head}}^{(1)} \in \mathbb{R}^{64}, \mathbf{w}_{\text{head}}^{(2)} \in \mathbb{R}^{1 \times 64}, b_{\text{head}}^{(2)} \in \mathbb{R}\}$:
+$$s_c(\mathbf{x}) = \sigma\left(\mathbf{w}_{\text{head}}^{(2)} \operatorname{ReLU}\left(\mathbf{W}_{\text{head}}^{(1)} \mathbf{h}_B(\mathbf{x}) + \mathbf{b}_{\text{head}}^{(1)}\right) + b_{\text{head}}^{(2)}\right) \in (0, 1)$$
+Trained by minimizing the binary cross-entropy loss over a held-out calibration set $\mathcal{D}_{\text{cal}} = \{(\mathbf{x}_i, y_i)\}_{i=1}^M$ unseen by Model B during its training:
+$$\mathcal{L}(\phi) = -\frac{1}{M} \sum_{i=1}^M \left[ e_{B,i} \log s_c(\mathbf{x}_i) + (1 - e_{B,i}) \log \left(1 - s_c(\mathbf{x}_i)\right) \right]$$
 
 ---
 
@@ -99,9 +141,21 @@ Month 12 |  10.59% |       0.5239 |         0.5188 |           0.5256 |
 ---
 
 ### Phase 3 — Selective Prediction & Risk-Coverage Analysis
-Combining all three signals into a calibrated blend:
 
-$$\text{Score}_{\text{blend}} = \sigma\left(0.472 \cdot \text{conf}_a - 0.239 \cdot \text{conf}_b + 2.850 \cdot \text{conf}_c\right)$$
+#### Mathematical Formulation of Selective Prediction
+For a confidence scoring function $\kappa: \mathbb{R}^D \to \mathbb{R}$, a selective classifier predicts when confidence meets or exceeds a decision threshold $\tau$, abstaining otherwise.
+
+Given a test dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^N$, empirical coverage and selective accuracy are defined as:
+$$\operatorname{Coverage}(\tau) = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left(\kappa(\mathbf{x}_i) \ge \tau\right)$$
+$$\operatorname{SelectiveAccuracy}(\tau) = \frac{\sum_{i=1}^N \mathbb{I}\left(\hat{y}_{B}(\mathbf{x}_i) = y_i\right) \cdot \mathbb{I}\left(\kappa(\mathbf{x}_i) \ge \tau\right)}{\sum_{i=1}^N \mathbb{I}\left(\kappa(\mathbf{x}_i) \ge \tau\right)}$$
+
+For target coverage $C \in (0, 1]$, threshold $\tau(C) = \operatorname{Quantile}_{1-C}\left(\{\kappa(\mathbf{x}_i)\}_{i=1}^N\right)$.
+
+#### Learned Meta-Interoceptive Blend
+The three confidence estimators $\mathbf{c}(\mathbf{x}) = [\kappa_a(\mathbf{x}), \; 1 - s_b(\mathbf{x}), \; 1 - s_c(\mathbf{x})]^\top \in [0, 1]^3$ are standardized and mapped via learned logistic weights:
+$$\kappa_{\text{blend}}(\mathbf{x}) = \sigma\left(\mathbf{w}_{\text{blend}}^\top \tilde{\mathbf{c}}(\mathbf{x}) + b_{\text{blend}}\right)$$
+Empirical fit coefficients on held-out data:
+$$\mathbf{w}_{\text{blend}} = [0.472, \; -0.239, \; 2.850]^\top, \quad b_{\text{blend}} = 4.312$$
 
 | Method / Signal | Coverage at $\ge 99.0\%$ Accuracy | Samples Safely Retained (out of 10k) |
 | :--- | :---: | :---: |
