@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-09-19T18:00:27.719536+00:00",
+  "seed": 42,
+  "git_commit": "0ce1d90cb8b6769adcbfb6b3d777adb38e7d6793",
+  "target_accuracy": 0.99,
+  "base_accuracy": 0.9751,
+  "coverage_at_99_pct": {
+    "confidence_only": 0.9545454545454545,
+    "self_stats_only": 0.17272727272727273,
+    "observer_only": 0.7818181818181817,
+    "blend": 0.8636363636363635,
+    "absolute_gain": -0.09090909090909094
+  },
+  "blender_coefficients": {
+    "w_confidence": 0.471667262661235,
+    "w_self_stats": -0.23867240277311103,
+    "w_observer": 2.8502076622902672
+  },
+  "headline": "The meta-interoceptive blend unlocks 86.4% coverage at >= 99.0% accuracy, compared to 95.5% for confidence-only (a gain of -9.09%, allowing -909 additional samples to be safely automated)."
+}
