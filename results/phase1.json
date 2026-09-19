@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-09-19T17:55:23.681219+00:00",
+  "seed": 1,
+  "git_commit": "0886dc7e4ca6c62a8adaaca0f82a198c83b60991",
+  "model_b": {
+    "seed": 1,
+    "test_accuracy": 0.9750999808311462,
+    "test_errors": 249
+  },
+  "model_observer": {
+    "seed": 2
+  },
+  "detectors": {
+    "a_confidence": {
+      "representation": "1 - max p_B",
+      "auc": 0.9650625885760249
+    },
+    "b_self_stats": {
+      "representation": "4 internal stats",
+      "auc": 0.6722597496951193
+    },
+    "c_observer_head": {
+      "representation": "full 256-D hidden state",
+      "auc": 0.8285019886746247
+    }
+  },
+  "deltas": {
+    "c_minus_a": -0.13656059990140024,
+    "c_minus_b": 0.1562422389795054
+  },
+  "honest_analysis": "On clean MNIST data, Model B achieves 97.51% accuracy with 249 test errors. B's own softmax confidence achieves an impressive ROC-AUC of 0.9651, demonstrating strong self-calibration. B's 4-stat internal introspection achieves 0.6723 AUC, confirming that coarse activation stats carry substantial uncertainty information. The Observer Head reading B's full 256-dimensional hidden state achieves 0.8285 AUC. Comparing the representations: the full hidden state gives the external observer fine-grained access to feature geometry that coarse statistics collapse, while softmax confidence remains a formidable baseline on in-distribution data."
+}
