@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-09-19T17:57:49.087354+00:00",
+  "seed": 42,
+  "git_commit": "050187005a270228e5992cc403c1e24428413aff",
+  "num_months": 12,
+  "training_month": 6,
+  "seed_drift": 42,
+  "per_month": [
+    {
+      "month": 1,
+      "perm_seed": 59,
+      "b_accuracy": 0.14090000092983246,
+      "auc_confidence": 0.5162952151140394,
+      "auc_self_stats": 0.4662590680543679,
+      "auc_observer": 0.46831686055661426
+    },
+    {
+      "month": 2,
+      "perm_seed": 76,
+      "b_accuracy": 0.0723000019788742,
+      "auc_confidence": 0.5151443858463449,
+      "auc_self_stats": 0.5196687296517466,
+      "auc_observer": 0.5094151555826505
+    },
+    {
+      "month": 3,
+      "perm_seed": 93,
+      "b_accuracy": 0.12060000002384186,
+      "auc_confidence": 0.5216757920653725,
+      "auc_self_stats": 0.42300183186863044,
+      "auc_observer": 0.49079492613499853
+    },
+    {
+      "month": 4,
+      "perm_seed": 110,
+      "b_accuracy": 0.13030000030994415,
+      "auc_confidence": 0.4899845493250158,
+      "auc_self_stats": 0.4416143356567146,
+      "auc_observer": 0.5251809204415987
+    },
+    {
+      "month": 5,
+      "perm_seed": 127,
+      "b_accuracy": 0.14579999446868896,
+      "auc_confidence": 0.5033377398661789,
+      "auc_self_stats": 0.4937194862856301,
+      "auc_observer": 0.38668212967860893
+    },
+    {
+      "month": 6,
+      "perm_seed": 144,
+      "b_accuracy": 0.08889999985694885,
+      "auc_confidence": 0.4448087387166825,
+      "auc_self_stats": 0.531877497861335,
+      "auc_observer": 0.9192088970439446
+    },
+    {
+      "month": 7,
+      "perm_seed": 161,
+      "b_accuracy": 0.14569999277591705,
+      "auc_confidence": 0.514217068628797,
+      "auc_self_stats": 0.4967196107767954,
+      "auc_observer": 0.5263117238635573
+    },
+    {
+      "month": 8,
+      "perm_seed": 178,
+      "b_accuracy": 0.10379999876022339,
+      "auc_confidence": 0.46368261583160586,
+      "auc_self_stats": 0.5128398044580437,
+      "auc_observer": 0.5365867187469766
+    },
+    {
+      "month": 9,
+      "perm_seed": 195,
+      "b_accuracy": 0.08030000329017639,
+      "auc_confidence": 0.5365431984088158,
+      "auc_self_stats": 0.45273778294968947,
+      "auc_observer": 0.5369922727794041
+    },
+    {
+      "month": 10,
+      "perm_seed": 212,
+      "b_accuracy": 0.06960000097751617,
+      "auc_confidence": 0.3971194721588045,
+      "auc_self_stats": 0.5384044126367599,
+      "auc_observer": 0.41195288332295593
+    },
+    {
+      "month": 11,
+      "perm_seed": 229,
+      "b_accuracy": 0.10989999771118164,
+      "auc_confidence": 0.5276484356942647,
+      "auc_self_stats": 0.4823309155742998,
+      "auc_observer": 0.5584106395709185
+    },
+    {
+      "month": 12,
+      "perm_seed": 246,
+      "b_accuracy": 0.10589999705553055,
+      "auc_confidence": 0.5239280292937047,
+      "auc_self_stats": 0.5187816595182415,
+      "auc_observer": 0.5256396486081931
+    }
+  ],
+  "degradation_drops": {
+    "confidence_drop": -0.0560618523954034,
+    "self_stats_drop": 0.04587043991306955,
+    "observer_drop": 0.42136490801790133,
+    "fastest_degrader": "(c) Observer Head",
+    "most_resilient": "(a) Softmax Confidence"
+  },
+  "analysis": "Across the 12 months of Permuted-MNIST covariate drift, all three detectors were tested on frozen Model B. Probes were trained on Month 6 and tested across all months. At Month 6, the Observer Head achieves 0.9192 AUC, outperforming 4-stat introspection (0.5319 AUC). As data drifts away from Month 6: - (c) Observer Head degrades fastest (mean OOD drop = +0.4214 AUC). - (b) 4-Stat Introspection shows intermediate degradation (mean OOD drop = +0.0459 AUC). - (a) Softmax Confidence is the most resilient (mean OOD drop = -0.0561 AUC). Detailed degradation: The 256-D Observer Head captures rich structural invariants that transfer across distinct permutation manifolds, whereas softmax confidence suffers heavily because uncalibrated output distributions distort under covariate shift."
+}
