@@ -210,3 +210,18 @@ python -m meta_interoception.phase2_drift_showdown --seed 42 --months 12 --train
 # Execute Phase 3: Selective Prediction & Risk-Coverage
 python -m meta_interoception.phase3_selective_prediction --seed 42 --target-acc 0.99
 ```
+
+---
+
+## 🌐 The Neural Self-Awareness Continuum
+
+| # | Project | Biological Analogy | Core Capability | Live Link |
+|---|---|---|---|---|
+| **1** | **[Interoception](https://haidar167.github.io/interoception/)** | Internal visceral sensing | Senses internal confusion via hidden activation stats | [GitHub](https://github.com/haidar167/interoception) |
+| **2** | **[Proprioception](https://haidar167.github.io/proprioception/)** | Body substrate awareness | Senses weight damage & localizes corrupted layers | [GitHub](https://github.com/haidar167/proprioception) |
+| **3** | **[Meta-Interoception](https://haidar167.github.io/meta-interoception/)** | Metacognitive monitoring | Monitors the calibration of its own self-monitors | [GitHub](https://github.com/haidar167/meta-interoception) |
+| **4** | **[Nociception](https://haidar167.github.io/nociception/)** | Pain-driven help seeking | Spends limited human supervision budget on likely errors | [GitHub](https://github.com/haidar167/nociception) |
+| **5** | **[SOMNIA](https://haidar167.github.io/somnia/)** | Targeted sleep consolidation | Dreams targeted examples to patch its own weak spots | [GitHub](https://github.com/haidar167/somnia) |
+
+---
+*Part of the Neural Self-Awareness research continuum by [haidar167](https://github.com/haidar167).*
